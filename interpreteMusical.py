@@ -13,7 +13,7 @@ def play_note(frequency, duration=0.5):
 def calcula_resultados():
     A = 440
     resultados = []
-    for n in range(26):
+    for n in range(25):
         resultado = A * 2 ** (n / 12)
         resultados.append(resultado)
     return resultados
@@ -30,7 +30,7 @@ def atribuir_frequencias():
 
 def gerar_frequencias():
     notas_frequencias = atribuir_frequencias()
-    ntpedida = "E5"  # Pode alterar para outra nota
+    ntpedida = "A6"  # Pode alterar para outra nota
     frequencia = notas_frequencias.get(ntpedida)
     if frequencia:
         play_note(frequencia)
