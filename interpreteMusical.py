@@ -1,6 +1,8 @@
 import simpleaudio as sa
 import numpy as np
 
+
+# Geração automática de notas musicais com base em frequências
 def play_note(frequency, duration=0.5):
     fs = 44100  # taxa de amostragem (samples por segundo)
     t = np.linspace(0, duration, int(fs * duration), False)
