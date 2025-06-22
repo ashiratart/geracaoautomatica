@@ -34,12 +34,18 @@ def atribuir_frequencias():
     return notas_frequencias
 
 
-def mapear_posicao_para_nota(x, largura_frame, notas_frequencias):
+def mapear_posicao_para_nota(x, y, largura_frame, altura_frame, notas_frequencias, hand_landmarks):
     num_teclas = len(notas_frequencias)
     intervalo = largura_frame // num_teclas
     indice_nota = min(x // intervalo, num_teclas - 1)
     nota = list(notas_frequencias.keys())[indice_nota]
-    return nota, indice_nota, intervalo
+
+    # Verifica se o dedo indicador está dobrado (y do indicador > y da articulação intermediária)
+    y_indicador = int(hand_landmarks.landmark[8].y * altura_frame)
+    y_intermediario = int(hand_landmarks.landmark[6].y * altura_frame)
+    dedo_dobrado = y_indicador > y_intermediario  # Se a ponta está abaixo da articulação, está dobrado
+
+    return nota, indice_nota, intervalo, dedo_dobrado
 
 
 def desenhar_teclado(frame, num_teclas, tecla_ativa):
@@ -54,7 +60,7 @@ def desenhar_teclado(frame, num_teclas, tecla_ativa):
         if i == tecla_ativa:
             cor = (0, 255, 0)  # Verde para tecla ativa
         else:
-            cor = (255, 255, 255)  # Branco para teclas inativas
+            cor = (255, 255, 255)  # Transparente para teclas inativas
 
         cv2.rectangle(frame, (x_inicio, altura - 100), (x_fim, altura), cor, -1)
         cv2.rectangle(frame, (x_inicio, altura - 100), (x_fim, altura), (0, 0, 0), 2)
@@ -92,9 +98,12 @@ def ver():
                             if id == 8:  # Dedo indicador
                                 cv2.circle(frame, (cx, cy), 10, (255, 0, 255), cv2.FILLED)
 
-                                nota_detectada, indice_nota, intervalo = mapear_posicao_para_nota(cx, w, notas_frequencias)
+                                # Passando os parâmetros corretos
+                                nota_detectada, indice_nota, intervalo, dedo_dobrado = mapear_posicao_para_nota(
+                                    cx, cy, w, h, notas_frequencias, hand_landmarks)
 
-                                if nota_detectada != nota_atual:
+                                # Tocar somente se o dedo estiver dobrado
+                                if dedo_dobrado and nota_detectada != nota_atual:
                                     frequencia = notas_frequencias[nota_detectada]
                                     print(f"Tocando {nota_detectada} ({frequencia:.2f} Hz)")
                                     play_note(frequencia, duration=0.3)
@@ -122,7 +131,7 @@ def ver():
 
 def main():
     print("Bem-vindo ao simulador musical com visão computacional!")
-    print("\nEste teclado virtual responde à posição do seu dedo indicador.")
+    print("\nEste teclado virtual responde à posição do seu dedo indicador e só toca quando você dobrar o dedo.")
     print("Programa desenvolvido por: Acácio Mariano, estudante de Engenharia de Eletrônica, UniEnsino, 2025\n")
     print("Para iniciar, pressione 'i'.\n"
           "Para sair, pressione 's'.\n")
